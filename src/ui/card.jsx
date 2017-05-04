@@ -33,6 +33,7 @@ export default class DataCard extends React.Component {
           <MetricsGraphics
             data={this.state.data}
             width={280}
+            area={true}
             height={200}
             x_accessor="date"
             y_accessor="main_rate"
