@@ -13,3 +13,9 @@
 .graph {
     cursor: pointer;
 }
+
+.large-graph-container {
+    width: 800px;
+    height: 200px;
+    margin: auto;
+}
