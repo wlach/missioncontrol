@@ -1,8 +1,10 @@
 import React from 'react';
+import { Provider } from 'react-redux';
 import { HashRouter as Router, Route } from 'react-router-dom';
 import MainView from './mainview.jsx';
 import SubView from './subview.jsx';
 import DetailView from './detailview.jsx';
+import { fetchCrashData, fetchVersionData } from '../actions';
 
 export default class Dashboard extends React.Component {
   constructor(props) {
@@ -10,7 +12,7 @@ export default class Dashboard extends React.Component {
     this.state = {
       cards: [],
       filter: '',
-      dimensionFilter: 'Windows ESR',
+      store: props.store,
     };
   }
 
@@ -18,6 +20,11 @@ export default class Dashboard extends React.Component {
     // doing this here (instead of the constructor) due to:
     // https://github.com/mozilla-neutrino/neutrino-dev/issues/172
     this.filterChanged = this.filterChanged.bind(this);
+    const store = this.state.store;
+    store.dispatch(fetchVersionData()).then(
+      () => {
+        store.dispatch(fetchCrashData(store.getState().versionInfo.matrix));
+      });
   }
 
   filterChanged(ev) {
@@ -36,13 +43,15 @@ export default class Dashboard extends React.Component {
         <nav className="navbar navbar-inverse bg-inverse">
           <a className="navbar-brand" href="#">Mission Control</a>
         </nav>
-        <Router>
-          <div>
-            <Route exact path="/" component={MainView} />
-            <Route exact path="/:channel/:platform" component={SubView}/>
-            <Route exact name="measureDetail" path="/:channel/:platform/:measure" component={DetailView}/>
-          </div>
-        </Router>
+        <Provider store={this.state.store}>
+          <Router>
+            <div>
+              <Route exact path="/" component={MainView}/>
+              <Route exact path="/:channel/:platform" component={SubView}/>
+              <Route exact name="measureDetail" path="/:channel/:platform/:measure" component={DetailView}/>
+            </div>
+          </Router>
+        </Provider>
       </div>
     );
   }

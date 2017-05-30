@@ -1,11 +1,11 @@
 import React from 'react';
-import { VictoryAxis, VictoryLine, VictoryChart, VictoryStack, VictoryTheme, VictoryTooltip } from 'victory';
+import { VictoryAxis, VictoryLine, VictoryChart, VictoryLegend, VictoryStack, VictoryTheme, VictoryTooltip, VictoryZoomContainer } from 'victory';
 
 export default class MeasureGraph extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      data: this.props.data,
+      y: this.props.y || 'value',
       width: this.props.width,
       height: this.props.height,
     };
@@ -13,20 +13,30 @@ export default class MeasureGraph extends React.Component {
 
   render() {
     return (
-      <VictoryChart
+        <VictoryChart
+          containerComponent={<VictoryZoomContainer/>}
         width={this.state.width}
         height={this.state.height}
-        domainPadding={50}
         theme={VictoryTheme.material}>
-        <VictoryAxis/>
-        <VictoryAxis dependentAxis/>
+        <VictoryAxis tickFormat={date => `${new Date(date).getHours()}h`}/>
+          <VictoryAxis dependentAxis/>
+          {
+            this.props.seriesList.length > 1 &&
+              <VictoryLegend
+                  data={ this.props.seriesList.map(series => ({ name: series.name })) }
+                  />
+          }
         <VictoryStack>
-          <VictoryLine
-            labelComponent={<VictoryTooltip/>}
-            data={this.state.data}
-            x="date"
-            y="value"
-            />
+          { this.props.seriesList.map(series => (
+            <VictoryLine
+              key={`${this.state.y}-${series.name}`}
+              labelComponent={<VictoryTooltip/>}
+              data={series.data}
+              x="date"
+              y={this.state.y}
+              />
+          ))
+          }
         </VictoryStack>
       </VictoryChart>
     );

@@ -2,20 +2,54 @@ import React from 'react';
 import _ from 'lodash';
 import { Link } from 'react-router-dom';
 import { Card, CardBlock, CardColumns, CardHeader, Row } from 'reactstrap';
+import { connect } from 'react-redux';
 import MeasureGraph from './measuregraph.jsx';
 import SubViewNav from './subviewnav.jsx';
 
+const mapStateToProps = (state, ownProps) => {
+  const channel = ownProps.match.params.channel;
+  const platform = ownProps.match.params.platform;
 
-function createValueRange(amountBefore, amountAfter, valueBefore, valueAfter, noise) {
-  const noisyConstant = x => x + (Math.random() * noise);
-  return _.concat(_.zip(_.range(0, amountBefore),
-                           _.times(amountBefore, _.curry(noisyConstant, 2)(valueBefore))),
-                   _.zip(_.range(amountBefore + 1, amountBefore + amountAfter + 1),
-                         _.times(amountAfter, _.curry(noisyConstant, 2)(valueAfter))))
-    .map(pair => ({ date: pair[0], value: pair[1] }));
-}
+  // if present, summarize crash data as being a single quantity
+  if (state.crashData && state.crashData.channels &&
+      state.crashData.channels[platform] &&
+      state.crashData.channels[platform][channel] &&
+      state.crashData.channels[platform][channel].data) {
+    const aggregatedDataMap = {};
+    _.forEach(state.crashData.channels[platform][channel].data, (version) => {
+      version.forEach((d) => {
+        if (!aggregatedDataMap[d.date]) {
+          aggregatedDataMap[d.date] = {
+            date: d.date,
+            value: d.main_rate,
+          };
+        } else {
+          aggregatedDataMap[d.date].value += d.main_rate;
+        }
+      });
+    });
 
-export default class SubView extends React.Component {
+    return {
+      summary: {
+        crash: {
+          main: {
+            status: 'success',
+            seriesList: [
+              {
+                name: 'aggregate',
+                data: _.values(aggregatedDataMap).sort((a, b) => a.date > b.date),
+              },
+            ],
+          },
+        },
+      },
+    };
+  }
+
+  return { summary: {} };
+};
+
+export class SubViewComponent extends React.Component {
 
   constructor(props) {
     super(props);
@@ -24,18 +58,6 @@ export default class SubView extends React.Component {
       channel: props.match.params.channel,
       platform: props.match.params.platform,
       history: {},
-      summary: {
-        crash: {
-          main: {
-            status: 'success',
-            data: createValueRange(10, 10, 10, 14, 1),
-          },
-          gpu: {
-            status: 'danger',
-            data: createValueRange(10, 10, 10, 80, 1),
-          },
-        },
-      },
     };
   }
 
@@ -51,7 +73,7 @@ export default class SubView extends React.Component {
           />
         <div className="container center">
           {
-            _.map(this.state.summary, (dimension, dimensionName) => (
+            _.map(this.props.summary, (dimension, dimensionName) => (
               <Row key={dimensionName}>
                 <CardColumns>
                   {
@@ -62,7 +84,7 @@ export default class SubView extends React.Component {
                         </CardHeader>
                         <CardBlock>
                           <MeasureGraph
-                            data={measure.data}
+                            seriesList={measure.seriesList}
                             width={320}
                             height={200}/>
                         </CardBlock>
@@ -83,3 +105,7 @@ export default class SubView extends React.Component {
     );
   }
 }
+
+const SubView = connect(mapStateToProps)(SubViewComponent);
+
+export default SubView;

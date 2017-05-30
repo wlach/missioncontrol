@@ -4,14 +4,15 @@ import { Card, CardBlock, CardDeck, CardHeader, CardFooter, CardText, Row } from
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
 
-const mapStateToProps = state => ({ crashData: state.crashData });
+const mapStateToProps = ({ crashData }) => ({ cd: crashData });
 
-export class MainViewComponent extends React.Component {
+export class MainView extends React.Component {
 
   constructor(props) {
     super(props);
+    console.log('init');
+    console.log(props);
     this.state = {
-      crashData: props.crashData,
       filter: '',
       summary: {
         windows: {
@@ -48,22 +49,16 @@ export class MainViewComponent extends React.Component {
 
   render() {
     return (
-      <div>
-      <div className="container">
-        <div className="input-group filter-group">
-          <input id="filter-input" type="text" className="form-control" placeholder="Filter text" onChange={this.filterChanged}/>
-        </div>
-      </div>
       <div className="container center">
         {
-          _.map(this.props.crashData.channels, (platform, platformName) => (
+          _.map(this.state.summary, (platform, platformName) => (
             <Row>
               <CardDeck>
                 {
                   _.map(platform, (channel, channelName) => (
                     <Card>
                       <CardHeader className={`alert-${channel.status}`}>
-                        { platformName } { channelName }
+                        { _.capitalize(platformName) } { channelName }
                       </CardHeader>
                       <CardBlock>
                         {
@@ -117,7 +112,7 @@ export class MainViewComponent extends React.Component {
                             <thead>
                               <tr>
                                 <th>Measure</th>
-                                <th>Expected</th>
+                                <th>Minimum</th>
                                 <th>Current</th>
                               </tr>
                             </thead>
@@ -129,7 +124,7 @@ export class MainViewComponent extends React.Component {
                                       { m.measure }
                                     </Link>
                                   </td>
-                                  <td>{ m.expected }</td>
+                                  <td>{ m.minimum }</td>
                                   <td>{ m.current }</td>
                                 </tr>
                               ))
@@ -152,11 +147,8 @@ export class MainViewComponent extends React.Component {
           ))
         }
       </div>
-        </div>
     );
   }
 }
 
-const MainView = connect(mapStateToProps)(MainViewComponent);
-
-export default MainView;
+export default connect(mapStateToProps)(MainView);
