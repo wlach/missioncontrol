@@ -1,10 +1,13 @@
 import React from 'react';
-import { VictoryAxis, VictoryLine, VictoryChart, VictoryLegend, VictoryStack, VictoryTheme, VictoryTooltip, VictoryZoomContainer } from 'victory';
+import { curveLinear } from 'd3';
+import { timeFormat } from 'd3-time-format';
+import MetricsGraphics from 'react-metrics-graphics';
 
 export default class MeasureGraph extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
+      title: this.props.title,
       y: this.props.y || 'value',
       width: this.props.width,
       height: this.props.height,
@@ -12,33 +15,23 @@ export default class MeasureGraph extends React.Component {
   }
 
   render() {
+    const numSeries = this.props.seriesList.length;
     return (
-        <VictoryChart
-          containerComponent={<VictoryZoomContainer/>}
+      <MetricsGraphics
+        title={this.state.title}
+        chart_type={!numSeries ? 'missing-data' : undefined}
+        legend={numSeries > 1 ? this.props.seriesList.map(s => s.name) : undefined}
+        data={numSeries ? this.props.seriesList.map(s => s.data) : undefined}
         width={this.state.width}
         height={this.state.height}
-        theme={VictoryTheme.material}>
-        <VictoryAxis tickFormat={date => `${new Date(date).getHours()}h`}/>
-          <VictoryAxis dependentAxis/>
-          {
-            this.props.seriesList.length > 1 &&
-              <VictoryLegend
-                  data={ this.props.seriesList.map(series => ({ name: series.name })) }
-                  />
-          }
-        <VictoryStack>
-          { this.props.seriesList.map(series => (
-            <VictoryLine
-              key={`${this.state.y}-${series.name}`}
-              labelComponent={<VictoryTooltip/>}
-              data={series.data}
-              x="date"
-              y={this.state.y}
-              />
-          ))
-          }
-        </VictoryStack>
-      </VictoryChart>
-    );
+        interpolate={curveLinear}
+        missing_is_hidden={true}
+        missing_text="No data for this measure"
+        x_accessor="date"
+        y_accessor={this.state.y}
+        xax_format={this.props.xax_format ? timeFormat(this.props.xax_format) : undefined}
+        xax_count={this.props.xax_count}
+        right={40}
+        />);
   }
 }

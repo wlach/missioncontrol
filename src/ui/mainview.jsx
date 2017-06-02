@@ -1,49 +1,36 @@
-import React from 'react';
 import _ from 'lodash';
-import { Card, CardBlock, CardDeck, CardHeader, CardFooter, CardText, Row } from 'reactstrap';
+import React from 'react';
+import { Card, CardBlock, CardColumns, CardHeader, CardFooter, CardText } from 'reactstrap';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
+import { CardErrorTable, ERROR_TYPE_OUTSIDE_RANGE, ERROR_TYPE_INSUFFICIENT_DATA } from './errortable.jsx';
 
 const mapStateToProps = state => ({ crashData: state.crashData });
+
+const stringMatchesFilter = (strs, filterStr) =>
+  _.every(filterStr.split(' ').map(
+    filterSubStr => _.some(strs.map(
+      str => str.toLowerCase().indexOf(filterSubStr.toLowerCase()) >= 0))));
 
 export class MainViewComponent extends React.Component {
 
   constructor(props) {
     super(props);
     this.state = {
-      crashData: props.crashData,
       filter: '',
-      summary: {
-        windows: {
-          esr: {
-            status: 'success',
-            passingMeasures: 1,
-          },
-          beta: {
-            status: 'success',
-            passingMeasures: 1,
-          },
-          release: {
-            status: 'danger',
-            errors: [
-              { measure: 'crash-gpu',
-                limit: 50,
-                current: 80,
-              },
-            ],
-          },
-          nightly: {
-            status: 'warning',
-            insufficientData: [
-              { measure: 'crash',
-                minimum: 2,
-                current: 0,
-              },
-            ],
-          },
-        },
-      },
     };
+  }
+
+  componentDidMount() {
+    // doing this here (instead of the constructor) due to:
+    // https://github.com/mozilla-neutrino/neutrino-dev/issues/172
+    this.filterChanged = this.filterChanged.bind(this);
+  }
+
+  filterChanged(ev) {
+    this.setState({
+      filter: ev.target.value,
+    });
   }
 
   render() {
@@ -51,109 +38,75 @@ export class MainViewComponent extends React.Component {
       <div>
       <div className="container">
         <div className="input-group filter-group">
-          <input id="filter-input" type="text" className="form-control" placeholder="Filter text" onChange={this.filterChanged}/>
+          <input id="filter-input" type="text" className="form-control" placeholder="Filter results" onChange={this.filterChanged}/>
         </div>
       </div>
       <div className="container center">
         {
-          _.map(this.props.crashData.channels, (platform, platformName) => (
-            <Row>
-              <CardDeck>
-                {
-                  _.map(platform, (channel, channelName) => (
-                    <Card>
-                      <CardHeader className={`alert-${channel.status}`}>
-                        { platformName } { channelName }
-                      </CardHeader>
-                      <CardBlock>
-                        {
-                          channel.passingMeasures && (
-                            <CardText>
-                              { channel.passingMeasures } measure(s)
-                              within acceptable range
-                            </CardText>
-                          )
-                        }
-                    {
-                      (channel.errors && channel.errors.length) && (
-                        <div>
-                          <CardText>
-                            { channel.errors.length } measure(s)
-                            outside of acceptable range:
-                          </CardText>
-                          <table className="table table-sm">
-                            <thead>
-                              <tr>
-                                <th>Measure</th>
-                                <th>Limit</th>
-                                <th>Current</th>
-                              </tr>
-                            </thead>
-                            {
-                              channel.errors.map(e => (
-                                <tr className="table-danger">
-                                  <td>
-                                    <Link to={`/${channelName}/${platformName}/${e.measure}`}>
-                                      { e.measure }
-                                    </Link>
-                                  </td>
-                                  <td>{ e.limit }</td>
-                                  <td>{ e.current }</td>
-                                </tr>
-                              ))
-                            }
-                        </table>
-                          </div>
-                      )
-                    }
-                    {
-                      (channel.insufficientData && channel.insufficientData.length) && (
-                        <div>
-                          <CardText>
-                            { channel.insufficientData.length } measure(s)
-                            with insufficient data:
-                          </CardText>
-                          <table className="table table-sm">
-                            <thead>
-                              <tr>
-                                <th>Measure</th>
-                                <th>Expected</th>
-                                <th>Current</th>
-                              </tr>
-                            </thead>
-                            {
-                              channel.insufficientData.map(m => (
-                                <tr className="table-warning">
-                                  <td>
-                                    <Link to={`/${channelName}/${platformName}/${m.measure}`}>
-                                      { m.measure }
-                                    </Link>
-                                  </td>
-                                  <td>{ m.expected }</td>
-                                  <td>{ m.current }</td>
-                                </tr>
-                              ))
-                            }
-                        </table>
-                          </div>
-                      )
-                    }
-                    </CardBlock>
-                      <CardFooter>
-                      <Link to={`${channelName}/${platformName}`}>
-                      More...
-                      </Link>
-                      </CardFooter>
+          this.props.crashData.channels && (
+            <CardColumns>
+              {
+                ['Windows', 'MacOS X', 'Linux'].map(platformName => ['release', 'beta', 'nightly', 'esr'].map(
+                  (channelName) => {
+                    const channel = this.props.crashData.channels[platformName][channelName];
+                    return stringMatchesFilter([platformName, channelName],
+                                               this.state.filter) && (
+                      <Card key={`${platformName}-${channelName}`}>
+                        <CardHeader className={`alert-${channel.status}`}>
+                          { platformName } { channelName }
+                        </CardHeader>
+                        <CardBlock>
+                          {
+                            channel.passingMeasures && (
+                              <CardText>
+                                { channel.passingMeasures } measure(s)
+                                within acceptable range
+                              </CardText>
+                            )
+                          }
+                          {
+                            (channel.errors && channel.errors.length) && (
+                              <div>
+                                <CardText>
+                                  { channel.errors.length } measure(s)
+                                  outside of acceptable range:
+                                </CardText>
+                                <CardErrorTable
+                                  platformName={platformName}
+                                  channelName={channelName}
+                                  errorType={ERROR_TYPE_OUTSIDE_RANGE}
+                                  errors={channel.errors}/>
+                              </div>)
+                          }
+                          {
+                            (channel.insufficientData && channel.insufficientData.length) && (
+                              <div>
+                                <CardText>
+                                  { channel.insufficientData.length } measure(s)
+                                  with insufficient data:
+                                </CardText>
+                                <CardErrorTable
+                                  platformName={platformName}
+                                  channelName={channelName}
+                                  errorType={ERROR_TYPE_INSUFFICIENT_DATA}
+                                  errors={channel.insufficientData}/>
+                              </div>)
+                          }
+                        </CardBlock>
+                        <CardFooter>
+                          <Link to={`${channelName}/${platformName}`}>
+                          More...
+                          </Link>
+                        </CardFooter>
                       </Card>
-                  ))
+                    );
+                  }))
                 }
-            </CardDeck>
-              </Row>
-          ))
+              </CardColumns>
+          )
         }
       </div>
-        </div>
-    );
+    </div>);
   }
 }
 

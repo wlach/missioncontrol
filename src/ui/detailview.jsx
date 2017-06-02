@@ -14,13 +14,46 @@ const mapStateToProps = (state, ownProps) => {
       state.crashData.channels[platform] &&
       state.crashData.channels[platform][channel] &&
       state.crashData.channels[platform][channel].data) {
+    const seriesMap = state.crashData.channels[platform][channel].data;
+
+    let seriesList;
+    if (Object.keys(seriesMap).length > 3) {
+      // show two most recent versions in graph as their own series, aggregate
+      // out the rest
+      const mostRecent = Object.keys(seriesMap).sort().slice(-2);
+      const aggregated = _.reduce(
+        _.filter(seriesMap, (series, version) => _.indexOf(mostRecent, version) === (-1)),
+        (result, series) => {
+          const newResult = _.clone(result);
+          series.forEach((datum) => {
+            if (!result[datum.date]) {
+              newResult[datum.date] = datum;
+            } else {
+              Object.keys(result[datum.date]).forEach((k) => {
+                if (k !== 'date') {
+                  newResult[datum.date][k] += datum[k];
+                }
+              });
+            }
+          });
+          return newResult;
+        }, {});
+
+      seriesList = [
+        { name: mostRecent[1], data: seriesMap[mostRecent[1]] },
+        { name: mostRecent[0], data: seriesMap[mostRecent[0]] },
+        { name: 'Older', data: _.values(aggregated) },
+      ];
+    } else {
+      seriesList = _.map(seriesMap, (data, version) => ({
+        name: version,
+        data,
+      }));
+    }
     return {
       status: 'success',
       isLoading: false,
-      seriesList: _.map(state.crashData.channels[platform][channel].data, (data, version) => ({
-        name: version,
-        data,
-      })),
+      seriesList,
     };
   }
 
@@ -59,20 +92,20 @@ class DetailViewComponent extends React.Component {
                 <Row>
                     <Col>
                         <div className="large-graph-container center">
-                            <h4>Rate</h4>
-                              <MeasureGraph
-                                  seriesList={this.props.seriesList}
-                                  y={'main_rate'}
-                                  width={800}
-                                  height={200}/>
+                            <MeasureGraph
+                                title="Crash Rate"
+                                seriesList={this.props.seriesList}
+                                y={'main_rate'}
+                                width={800}
+                                height={200}/>
                           </div>
                       </Col>
                   </Row>
                   <Row>
                       <Col>
                           <div className="large-graph-container center">
-                              <h4>Usage khours</h4>
                               <MeasureGraph
+                                  title="Usage khours"
                                   seriesList={this.props.seriesList}
                                   y={'usage_khours'}
                                   width={800}

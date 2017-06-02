@@ -85,6 +85,8 @@ export class SubViewComponent extends React.Component {
                         <CardBlock>
                           <MeasureGraph
                             seriesList={measure.seriesList}
+                            xax_format={'%Hh'}
+                            xax_count={4}
                             width={320}
                             height={200}/>
                         </CardBlock>
