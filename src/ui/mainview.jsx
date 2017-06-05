@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardBlock, CardColumns, CardHeader, CardFooter, CardText } from 'reactstrap';
 import { Link } from 'react-router-dom';
 import { connect } from 'react-redux';
-import { CardErrorTable, ERROR_TYPE_OUTSIDE_RANGE, ERROR_TYPE_INSUFFICIENT_DATA } from './errortable.jsx';
+import { ErrorTable, ERROR_TYPE_OUTSIDE_RANGE, ERROR_TYPE_INSUFFICIENT_DATA } from './errortable.jsx';
 
 const mapStateToProps = state => ({ crashData: state.crashData });
 
@@ -71,7 +71,7 @@ export class MainViewComponent extends React.Component {
                                   { channel.errors.length } measure(s)
                                   outside of acceptable range:
                                 </CardText>
-                                <CardErrorTable
+                                <ErrorTable
                                   platformName={platformName}
                                   channelName={channelName}
                                   errorType={ERROR_TYPE_OUTSIDE_RANGE}
@@ -85,7 +85,7 @@ export class MainViewComponent extends React.Component {
                                   { channel.insufficientData.length } measure(s)
                                   with insufficient data:
                                 </CardText>
-                                <CardErrorTable
+                                <ErrorTable
                                   platformName={platformName}
                                   channelName={channelName}
                                   errorType={ERROR_TYPE_INSUFFICIENT_DATA}

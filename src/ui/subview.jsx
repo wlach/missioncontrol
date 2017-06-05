@@ -13,33 +13,43 @@ const mapStateToProps = (state, ownProps) => {
   // if present, summarize crash data as being a single quantity
   if (state.crashData && state.crashData.channels &&
       state.crashData.channels[platform] &&
-      state.crashData.channels[platform][channel] &&
-      state.crashData.channels[platform][channel].data) {
-    const aggregatedDataMap = {};
-    _.forEach(state.crashData.channels[platform][channel].data, (version) => {
-      version.forEach((d) => {
-        if (!aggregatedDataMap[d.date]) {
-          aggregatedDataMap[d.date] = {
-            date: d.date,
-            value: d.main_rate,
-          };
-        } else {
-          aggregatedDataMap[d.date].value += d.main_rate;
-        }
+      state.crashData.channels[platform][channel]) {
+    if (state.crashData.channels[platform][channel].data) {
+      const aggregatedDataMap = {};
+      _.forEach(state.crashData.channels[platform][channel].data, (version) => {
+        version.forEach((d) => {
+          if (!aggregatedDataMap[d.date]) {
+            aggregatedDataMap[d.date] = {
+              date: d.date,
+              value: d.main_rate,
+            };
+          } else {
+            aggregatedDataMap[d.date].value += d.main_rate;
+          }
+        });
       });
-    });
+      return {
+        summary: {
+          crash: {
+            main: {
+              status: 'success',
+              seriesList: [{
+                name: 'aggregate',
+                data: _.values(aggregatedDataMap).sort((a, b) => a.date > b.date),
+              }],
+            },
+          },
+        },
+      };
+    }
 
+    // we have data, but it is empty
     return {
       summary: {
         crash: {
           main: {
-            status: 'success',
-            seriesList: [
-              {
-                name: 'aggregate',
-                data: _.values(aggregatedDataMap).sort((a, b) => a.date > b.date),
-              },
-            ],
+            status: 'warning',
+            seriesList: [],
           },
         },
       },
@@ -57,7 +67,6 @@ export class SubViewComponent extends React.Component {
       filter: '',
       channel: props.match.params.channel,
       platform: props.match.params.platform,
-      history: {},
     };
   }
 
