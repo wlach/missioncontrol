@@ -1,9 +1,10 @@
 import _ from 'lodash';
 import React from 'react';
 import { Card, CardBlock, CardColumns, CardHeader, CardFooter, CardText } from 'reactstrap';
-import { Link } from 'react-router-dom';
+import { Link, browserHistory } from 'react-router-dom';
 import { connect } from 'react-redux';
 import { ErrorTable, ERROR_TYPE_OUTSIDE_RANGE, ERROR_TYPE_INSUFFICIENT_DATA } from './errortable.jsx';
+import { OS_MAPPING } from '../schema';
 
 const mapStateToProps = state => ({ crashData: state.crashData });
 
@@ -25,12 +26,17 @@ export class MainViewComponent extends React.Component {
     // doing this here (instead of the constructor) due to:
     // https://github.com/mozilla-neutrino/neutrino-dev/issues/172
     this.filterChanged = this.filterChanged.bind(this);
+    this.cardClicked = this.cardClicked.bind(this);
   }
 
   filterChanged(ev) {
     this.setState({
       filter: ev.target.value,
     });
+  }
+
+  cardClicked(channelName, platformName) {
+    this.props.history.push(`${channelName}/${platformName}`);
   }
 
   render() {
@@ -46,12 +52,14 @@ export class MainViewComponent extends React.Component {
           this.props.crashData.channels && (
             <CardColumns>
               {
-                ['Windows', 'MacOS X', 'Linux'].map(platformName => ['release', 'beta', 'nightly', 'esr'].map(
+                _.values(OS_MAPPING).map(platformName => ['release', 'beta', 'nightly', 'esr'].map(
                   (channelName) => {
                     const channel = this.props.crashData.channels[platformName][channelName];
-                    return stringMatchesFilter([platformName, channelName],
-                                               this.state.filter) && (
-                      <Card key={`${platformName}-${channelName}`}>
+                    return stringMatchesFilter(
+                      [platformName, channelName], this.state.filter) && (
+                        <Card key={`${platformName}-${channelName}`}
+                              onClick={() => this.cardClicked(channelName, platformName)}
+                          className='missioncontrol-card'>
                         <CardHeader className={`alert-${channel.status}`}>
                           { platformName } { channelName }
                         </CardHeader>
@@ -93,11 +101,6 @@ export class MainViewComponent extends React.Component {
                               </div>)
                           }
                         </CardBlock>
-                        <CardFooter>
-                          <Link to={`${channelName}/${platformName}`}>
-                          More...
-                          </Link>
-                        </CardFooter>
                       </Card>
                     );
                   }))

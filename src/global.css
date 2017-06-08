@@ -6,10 +6,6 @@
     margin-top: 1rem;
 }
 
-.card {
-    width: 20rem;
-}
-
 .graph {
     cursor: pointer;
 }
@@ -18,4 +14,17 @@
     width: 800px;
     height: 200px;
     margin: auto;
+}
+
+html {
+    font-size: 14px;
+}
+
+.missioncontrol-card {
+    cursor: pointer;
+}
+
+.missioncontrol-card:hover {
+    box-shadow: 0 1px 4px 0 rgba(0,0,0,0.37);
+    transition: box-shadow 0.28s cubic-bezier(0.4,0,0.2,1);
 }

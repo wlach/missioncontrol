@@ -5,12 +5,13 @@ import { Card, CardBlock, CardColumns, CardHeader, Row } from 'reactstrap';
 import { connect } from 'react-redux';
 import MeasureGraph from './measuregraph.jsx';
 import SubViewNav from './subviewnav.jsx';
+import { CRASH_TYPES } from '../schema';
 
 const mapStateToProps = (state, ownProps) => {
   const channel = ownProps.match.params.channel;
   const platform = ownProps.match.params.platform;
 
-  // if present, summarize crash data as being a single quantity
+  // if present, summarize crash data across versions per crash type
   if (state.crashData && state.crashData.channels &&
       state.crashData.channels[platform] &&
       state.crashData.channels[platform][channel]) {
@@ -18,27 +19,32 @@ const mapStateToProps = (state, ownProps) => {
       const aggregatedDataMap = {};
       _.forEach(state.crashData.channels[platform][channel].data, (version) => {
         version.forEach((d) => {
-          if (!aggregatedDataMap[d.date]) {
-            aggregatedDataMap[d.date] = {
-              date: d.date,
-              value: d.main_rate,
-            };
-          } else {
-            aggregatedDataMap[d.date].value += d.main_rate;
-          }
+          CRASH_TYPES.forEach((crashType) => {
+            if (!aggregatedDataMap[crashType]) {
+              aggregatedDataMap[crashType] = {};
+            }
+            if (!aggregatedDataMap[crashType][d.date]) {
+              aggregatedDataMap[crashType][d.date] = {
+                date: d.date,
+                value: 0,
+              };
+            }
+            aggregatedDataMap[crashType][d.date].value += d[`crash-${crashType}`];
+          });
         });
       });
       return {
         summary: {
-          crash: {
-            main: {
+          crash: _.reduce(aggregatedDataMap, (crashTypes, data, crashType) => ({
+            ...crashTypes,
+            [crashType]: {
               status: 'success',
               seriesList: [{
                 name: 'aggregate',
-                data: _.values(aggregatedDataMap).sort((a, b) => a.date > b.date),
+                data: _.values(data).sort((a, b) => a.date > b.date),
               }],
             },
-          },
+          }), {}),
         },
       };
     }
@@ -70,6 +76,18 @@ export class SubViewComponent extends React.Component {
     };
   }
 
+  componentDidMount() {
+    // doing this here (instead of the constructor) due to:
+    // https://github.com/mozilla-neutrino/neutrino-dev/issues/172
+    this.cardClicked = this.cardClicked.bind(this);
+  }
+
+  cardClicked(measure) {
+    this.props.history.push('/'+ [this.state.channel,
+                                  this.state.platform,
+                                  measure].join('/'));
+  }
+
   render() {
     return (
       <div>
@@ -87,7 +105,9 @@ export class SubViewComponent extends React.Component {
                 <CardColumns>
                   {
                     _.map(dimension, (measure, dimension2Name) => (
-                      <Card key={`${dimensionName}-${dimension2Name}`}>
+                      <Card key={`${dimensionName}-${dimension2Name}`}
+                            onClick={() => this.cardClicked(`${dimensionName}-${dimension2Name}`)}
+                            className='missioncontrol-card'>
                         <CardHeader className={`alert-${measure.status}`}>
                           { _.capitalize(dimensionName) } { dimension2Name }
                         </CardHeader>
@@ -98,11 +118,6 @@ export class SubViewComponent extends React.Component {
                             xax_count={4}
                             width={320}
                             height={200}/>
-                        </CardBlock>
-                        <CardBlock>
-                          <Link to={`/${this.state.channel}/${this.state.platform}/${dimensionName}-${dimension2Name}`}>
-                            More...
-                          </Link>
                         </CardBlock>
                       </Card>
                     ))

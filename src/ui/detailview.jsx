@@ -13,9 +13,9 @@ const mapStateToProps = (state, ownProps) => {
   if (state.crashData && state.crashData.channels &&
       state.crashData.channels[platform] &&
       state.crashData.channels[platform][channel] &&
+      state.crashData.channels[platform][channel] &&
       state.crashData.channels[platform][channel].data) {
     const seriesMap = state.crashData.channels[platform][channel].data;
-
     let seriesList;
     if (Object.keys(seriesMap).length > 3) {
       // show two most recent versions in graph as their own series, aggregate
@@ -47,7 +47,7 @@ const mapStateToProps = (state, ownProps) => {
     } else {
       seriesList = _.map(seriesMap, (data, version) => ({
         name: version,
-        data,
+        data: data.sort((a, b) => a.date > b.date),
       }));
     }
     return {
@@ -95,7 +95,7 @@ class DetailViewComponent extends React.Component {
                             <MeasureGraph
                                 title="Crash Rate"
                                 seriesList={this.props.seriesList}
-                                y={'main_rate'}
+                                y={`${this.props.match.params.measure}`}
                                 width={800}
                                 height={200}/>
                           </div>

@@ -1,12 +1,11 @@
 import _ from 'lodash';
 import { combineReducers } from 'redux';
 import { REQUEST_VERSION_DATA, RECEIVE_VERSION_DATA, REQUEST_CRASH_DATA, RECEIVE_CRASH_DATA } from './actions';
+import { CHANNELS, CRASH_TYPES, EXPECTED_NUM_DATAPOINTS_PER_OS_CHANNEL, OS_MAPPING } from './schema';
 
 function getMajorVersion(verString) {
   return parseInt(verString.split('.')[0], 10);
 }
-
-const EXPECTED_NUM_DATAPOINTS = 100;
 
 function processVersionMatrix(rawVersionMatrix) {
   return {
@@ -36,14 +35,8 @@ function versionInfo(state = {}, action) {
 function processCrashRows(crashRows, versionMatrix) {
   const crashes = {};
 
-  const osMapping = {
-    Windows_NT: 'Windows',
-    Darwin: 'MacOS X',
-    Linux: 'Linux',
-  };
-
   crashRows.forEach((row) => {
-    const osname = osMapping[row.os_name];
+    const osname = OS_MAPPING[row.os_name];
     const channel = row.channel;
     const version = row.version;
 
@@ -64,42 +57,46 @@ function processCrashRows(crashRows, versionMatrix) {
     if (!crashes[osname][channel].data[version]) {
       crashes[osname][channel].data[version] = [];
     }
-    crashes[osname][channel].data[version].push({
-      main_rate: row.main_rate,
-      usage_khours: row.usage_khours,
-      date: new Date(row.date),
+
+    const crashSummary = {
+      usage_khours: (row.usage_hours / 1000.0),
+      date: new Date(row.start),
+    };
+    CRASH_TYPES.forEach((crashType) => {
+      crashSummary[`crash-${crashType}`] = row[crashType];
     });
+
+    crashes[osname][channel].data[version].push(crashSummary);
   });
 
   // we should have at least one version with EXPECTED_NUM_DATAPOINTS --
   // if there is no data, or some missing, note that
-  const expectedChannels = ['esr', 'beta', 'release', 'nightly'];
   _.forEach(crashes, (os, osname) => {
-    expectedChannels.forEach((expectedChannelName) => {
-      if (!os[expectedChannelName]) {
-        crashes[osname][expectedChannelName] = {
+    CHANNELS.forEach((channelName) => {
+      if (!os[channelName]) {
+        crashes[osname][channelName] = {
           status: 'warning',
           insufficientData: [{
             measure: 'crash',
-            expected: EXPECTED_NUM_DATAPOINTS,
+            expected: EXPECTED_NUM_DATAPOINTS_PER_OS_CHANNEL,
             current: 0,
           }],
         };
       } else {
-        const channel = crashes[osname][expectedChannelName];
+        const channel = crashes[osname][channelName];
         const numDataPoints = _.max(_.map(channel.data, data => data.length));
-        if (numDataPoints < EXPECTED_NUM_DATAPOINTS) {
-          crashes[osname][expectedChannelName] = {
+        if (numDataPoints < EXPECTED_NUM_DATAPOINTS_PER_OS_CHANNEL) {
+          crashes[osname][channelName] = {
             ...channel,
             status: 'warning',
             insufficientData: [{
-              measure: 'crash',
-              expected: EXPECTED_NUM_DATAPOINTS,
+              measure: 'crash-main',
+              expected: EXPECTED_NUM_DATAPOINTS_PER_OS_CHANNEL,
               current: numDataPoints,
             }],
           };
         } else {
-          crashes[osname][expectedChannelName] = {
+          crashes[osname][channelName] = {
             ...channel,
             status: 'success',
             passingMeasures: 1,
