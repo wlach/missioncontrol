@@ -1,6 +1,5 @@
 import React from 'react';
 import _ from 'lodash';
-import { Link } from 'react-router-dom';
 import { Card, CardBlock, CardColumns, CardHeader, Row } from 'reactstrap';
 import { connect } from 'react-redux';
 import MeasureGraph from './measuregraph.jsx';
@@ -83,9 +82,8 @@ export class SubViewComponent extends React.Component {
   }
 
   cardClicked(measure) {
-    this.props.history.push('/'+ [this.state.channel,
-                                  this.state.platform,
-                                  measure].join('/'));
+    const path = [this.state.channel, this.state.platform, measure].join('/');
+    this.props.history.push(`/${path}`);
   }
 
   render() {
@@ -107,7 +105,7 @@ export class SubViewComponent extends React.Component {
                     _.map(dimension, (measure, dimension2Name) => (
                       <Card key={`${dimensionName}-${dimension2Name}`}
                             onClick={() => this.cardClicked(`${dimensionName}-${dimension2Name}`)}
-                            className='missioncontrol-card'>
+                        className="missioncontrol-card">
                         <CardHeader className={`alert-${measure.status}`}>
                           { _.capitalize(dimensionName) } { dimension2Name }
                         </CardHeader>

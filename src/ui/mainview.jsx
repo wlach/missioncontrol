@@ -1,7 +1,6 @@
 import _ from 'lodash';
 import React from 'react';
-import { Card, CardBlock, CardColumns, CardHeader, CardFooter, CardText } from 'reactstrap';
-import { Link, browserHistory } from 'react-router-dom';
+import { Card, CardBlock, CardColumns, CardHeader, CardText } from 'reactstrap';
 import { connect } from 'react-redux';
 import { ErrorTable, ERROR_TYPE_OUTSIDE_RANGE, ERROR_TYPE_INSUFFICIENT_DATA } from './errortable.jsx';
 import { OS_MAPPING } from '../schema';
@@ -59,7 +58,7 @@ export class MainViewComponent extends React.Component {
                       [platformName, channelName], this.state.filter) && (
                         <Card key={`${platformName}-${channelName}`}
                               onClick={() => this.cardClicked(channelName, platformName)}
-                          className='missioncontrol-card'>
+                          className="missioncontrol-card">
                         <CardHeader className={`alert-${channel.status}`}>
                           { platformName } { channelName }
                         </CardHeader>
