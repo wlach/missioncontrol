@@ -94,7 +94,7 @@ class DetailViewComponent extends React.Component {
           ]}
           />
         {
-          !this.state.isLoading &&
+          !this.props.isLoading &&
             <div className="container center">
                 <Row>
                     <Col>
