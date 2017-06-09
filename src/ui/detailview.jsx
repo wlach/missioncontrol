@@ -98,11 +98,13 @@ class DetailViewComponent extends React.Component {
             <div className="container center">
                 <Row>
                     <Col>
-                        <div className="large-graph-container center">
+                        <div className="large-graph-container center" id="measure-series">
                             <MeasureGraph
                                 title="Crash Rate"
                                 seriesList={this.props.seriesList}
                                 y={`${this.props.match.params.measure}`}
+                                linked={true}
+                                linked_format="%Y-%m-%d-%H-%M-%S"
                                 width={800}
                                 height={200}/>
                           </div>
@@ -110,11 +112,13 @@ class DetailViewComponent extends React.Component {
                   </Row>
                   <Row>
                       <Col>
-                          <div className="large-graph-container center">
+                          <div className="large-graph-container center" id="time-series">
                               <MeasureGraph
                                   title="Usage khours"
                                   seriesList={this.props.seriesList}
                                   y={'usage_khours'}
+                                  linked={true}
+                                  linked_format="%Y-%m-%d-%H-%M-%S"
                                   width={800}
                                   height={200}/>
                           </div>

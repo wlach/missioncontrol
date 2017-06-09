@@ -31,6 +31,8 @@ export default class MeasureGraph extends React.Component {
         y_accessor={this.state.y}
         xax_format={this.props.xax_format ? timeFormat(this.props.xax_format) : undefined}
         xax_count={this.props.xax_count}
+        linked={this.props.linked}
+        linked_format={this.props.linked_format}
         right={40}
         />);
   }
