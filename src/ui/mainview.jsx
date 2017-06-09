@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import React from 'react';
+import { Helmet } from 'react-helmet';
 import { Card, CardBlock, CardColumns, CardHeader, CardText } from 'reactstrap';
 import { connect } from 'react-redux';
 import { ErrorTable, ERROR_TYPE_OUTSIDE_RANGE, ERROR_TYPE_INSUFFICIENT_DATA } from './errortable.jsx';
@@ -41,7 +42,10 @@ export class MainViewComponent extends React.Component {
   render() {
     return (
       <div>
-      <div className="container">
+        <Helmet>
+          <title>Mission Control</title>
+        </Helmet>
+        <div className="container">
         <div className="input-group filter-group">
           <input id="filter-input" type="text" className="form-control" placeholder="Filter results" onChange={this.filterChanged}/>
         </div>

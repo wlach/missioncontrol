@@ -1,6 +1,7 @@
 import React from 'react';
 import _ from 'lodash';
 import { Row, Col } from 'reactstrap';
+import { Helmet } from 'react-helmet';
 import { connect } from 'react-redux';
 import MeasureGraph from './measuregraph.jsx';
 import SubViewNav from './subviewnav.jsx';
@@ -77,6 +78,12 @@ class DetailViewComponent extends React.Component {
   render() {
     return (
       <div>
+        <Helmet>
+          <title>
+            { `${this.state.platform} ${this.state.channel} ${this.state.measure}` }
+          </title>
+        </Helmet>
+
         <SubViewNav
           breadcrumbs={[
             { name: 'Home', link: '/' },

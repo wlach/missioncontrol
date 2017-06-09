@@ -1,6 +1,7 @@
 import React from 'react';
 import _ from 'lodash';
 import { Card, CardBlock, CardColumns, CardHeader, Row } from 'reactstrap';
+import { Helmet } from 'react-helmet';
 import { connect } from 'react-redux';
 import MeasureGraph from './measuregraph.jsx';
 import SubViewNav from './subviewnav.jsx';
@@ -89,6 +90,11 @@ export class SubViewComponent extends React.Component {
   render() {
     return (
       <div>
+        <Helmet>
+          <title>
+            { `${this.state.platform} ${this.state.channel}` }
+          </title>
+        </Helmet>
         <SubViewNav
           breadcrumbs={[
             { name: 'Home', link: '/' },
