@@ -5,6 +5,7 @@ import { Helmet } from 'react-helmet';
 import { connect } from 'react-redux';
 import MeasureGraph from './measuregraph.jsx';
 import SubViewNav from './subviewnav.jsx';
+import { DEFAULT_TIME_INTERVAL, TIME_INTERVALS } from '../schema';
 
 
 const mapStateToProps = (state, ownProps) => {
@@ -65,6 +66,13 @@ const mapStateToProps = (state, ownProps) => {
   };
 };
 
+const getOptionalParameters = (props) => {
+  const urlParams = new URLSearchParams(props.location.search);
+  return {
+    timeInterval: urlParams.get('timeInterval') ? urlParams.get('timeInterval') : DEFAULT_TIME_INTERVAL,
+  };
+};
+
 class DetailViewComponent extends React.Component {
   constructor(props) {
     super(props);
@@ -72,7 +80,27 @@ class DetailViewComponent extends React.Component {
       channel: props.match.params.channel,
       platform: props.match.params.platform,
       measure: props.match.params.measure,
+      ...getOptionalParameters(props),
     };
+  }
+
+  componentDidMount() {
+    // doing this here (instead of the constructor) due to:
+    // https://github.com/mozilla-neutrino/neutrino-dev/issues/172
+    this.timeIntervalChanged = this.timeIntervalChanged.bind(this);
+  }
+
+  componentWillUpdate(nextProps) {
+    const params = getOptionalParameters(nextProps);
+    if (params.timeInterval !== this.state.timeInterval) {
+      this.setState({
+        ...params,
+      });
+    }
+  }
+
+  timeIntervalChanged(ev) {
+    this.props.history.push(`/${this.state.channel}/${this.state.platform}/${this.state.measure}?timeInterval=${ev.target.value}`);
   }
 
   render() {
@@ -96,6 +124,15 @@ class DetailViewComponent extends React.Component {
         {
           !this.props.isLoading &&
             <div className="container center">
+                    <Row>
+                        <select value={this.state.timeInterval} onChange={this.timeIntervalChanged}>
+                            {
+                              TIME_INTERVALS.map(
+                                timeInterval =>
+                                  <option value={timeInterval.value}>{timeInterval.label}</option>)
+                            }
+                        </select>
+                      </Row>
                 <Row>
                     <Col>
                         <div className="large-graph-container center" id="measure-series">
