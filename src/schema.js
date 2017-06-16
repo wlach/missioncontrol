@@ -1,3 +1,6 @@
+export const FIREFOX_VERSION_URL = 'https://storage.googleapis.com/missioncontrol-prototyping/firefox_versions.json';
+export const CRASH_DATA_URL = 'https://storage.googleapis.com/missioncontrol-prototyping/redash.json';
+
 export const CHANNELS = ['esr', 'beta', 'release', 'nightly'];
 
 export const CRASH_TYPES = ['content', 'gmplugin', 'gpu', 'main', 'plugin'];

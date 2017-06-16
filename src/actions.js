@@ -1,5 +1,5 @@
-const FIREFOX_VERSION_URL = 'https://product-details.mozilla.org/1.0/firefox_versions.json';
-const CRASH_DATA_URL = 'https://sql.telemetry.mozilla.org/api/queries/4769/results.json?api_key=0oBNalixUYqb03t1asALbHEOoZIw6lZP3bkdMENk';
+import { FIREFOX_VERSION_URL, CRASH_DATA_URL } from './schema';
+
 
 export const REQUEST_VERSION_DATA = 'REQUEST_VERSION_DATA';
 function requestVersionData() {
