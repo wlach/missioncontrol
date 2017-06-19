@@ -26,7 +26,7 @@ const mapStateToProps = (state, ownProps) => {
             if (!aggregatedDataMap[crashType][d.date]) {
               aggregatedDataMap[crashType][d.date] = {
                 date: d.date,
-                value: 0,
+                value: 0
               };
             }
             aggregatedDataMap[crashType][d.date].value += d[`crash-${crashType}`];
@@ -41,11 +41,11 @@ const mapStateToProps = (state, ownProps) => {
               status: 'success',
               seriesList: [{
                 name: 'aggregate',
-                data: _.values(data).sort((a, b) => a.date > b.date),
-              }],
-            },
-          }), {}),
-        },
+                data: _.values(data).sort((a, b) => a.date > b.date)
+              }]
+            }
+          }), {})
+        }
       };
     }
 
@@ -55,10 +55,10 @@ const mapStateToProps = (state, ownProps) => {
         crash: {
           main: {
             status: 'warning',
-            seriesList: [],
-          },
-        },
-      },
+            seriesList: []
+          }
+        }
+      }
     };
   }
 
@@ -72,13 +72,9 @@ export class SubViewComponent extends React.Component {
     this.state = {
       filter: '',
       channel: props.match.params.channel,
-      platform: props.match.params.platform,
+      platform: props.match.params.platform
     };
-  }
 
-  componentDidMount() {
-    // doing this here (instead of the constructor) due to:
-    // https://github.com/mozilla-neutrino/neutrino-dev/issues/172
     this.cardClicked = this.cardClicked.bind(this);
   }
 
@@ -99,9 +95,8 @@ export class SubViewComponent extends React.Component {
           breadcrumbs={[
             { name: 'Home', link: '/' },
             { name: `${this.state.platform} ${this.state.channel}`,
-              link: `/${this.state.channel}/${this.state.platform}` },
-          ]}
-          />
+              link: `/${this.state.channel}/${this.state.platform}` }
+          ]} />
         <div className="container center">
           {
             _.map(this.props.summary, (dimension, dimensionName) => (
@@ -109,8 +104,9 @@ export class SubViewComponent extends React.Component {
                 <CardColumns>
                   {
                     _.map(dimension, (measure, dimension2Name) => (
-                      <Card key={`${dimensionName}-${dimension2Name}`}
-                            onClick={() => this.cardClicked(`${dimensionName}-${dimension2Name}`)}
+                      <Card
+                        key={`${dimensionName}-${dimension2Name}`}
+                        onClick={() => this.cardClicked(`${dimensionName}-${dimension2Name}`)}
                         className="missioncontrol-card">
                         <CardHeader className={`alert-${measure.status}`}>
                           { _.capitalize(dimensionName) } { dimension2Name }
@@ -121,7 +117,7 @@ export class SubViewComponent extends React.Component {
                             xax_format={'%Hh'}
                             xax_count={4}
                             width={320}
-                            height={200}/>
+                            height={200} />
                         </CardBlock>
                       </Card>
                     ))
@@ -130,8 +126,8 @@ export class SubViewComponent extends React.Component {
               </Row>
             ))
           }
+        </div>
       </div>
-    </div>
     );
   }
 }

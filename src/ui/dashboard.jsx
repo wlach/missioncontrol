@@ -12,14 +12,13 @@ export default class Dashboard extends React.Component {
     this.state = {
       cards: [],
       filter: '',
-      store: props.store,
+      store: props.store
     };
+
+    this.filterChanged = this.filterChanged.bind(this);
   }
 
   componentDidMount() {
-    // doing this here (instead of the constructor) due to:
-    // https://github.com/mozilla-neutrino/neutrino-dev/issues/172
-    this.filterChanged = this.filterChanged.bind(this);
     const store = this.state.store;
     store.dispatch(fetchVersionData()).then(
       () => {
@@ -29,7 +28,7 @@ export default class Dashboard extends React.Component {
 
   filterChanged(ev) {
     this.setState({
-      filter: ev.target.value,
+      filter: ev.target.value
     });
   }
 
@@ -46,9 +45,9 @@ export default class Dashboard extends React.Component {
         <Provider store={this.state.store}>
           <Router>
             <div>
-              <Route exact path="/" component={MainView}/>
-              <Route exact path="/:channel/:platform" component={SubView}/>
-              <Route exact name="measureDetail" path="/:channel/:platform/:measure" component={DetailView}/>
+              <Route exact path="/" component={MainView} />
+              <Route exact path="/:channel/:platform" component={SubView} />
+              <Route exact name="measureDetail" path="/:channel/:platform/:measure" component={DetailView} />
             </div>
           </Router>
         </Provider>

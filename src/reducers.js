@@ -12,7 +12,7 @@ function processVersionMatrix(rawVersionMatrix) {
     beta: getMajorVersion(rawVersionMatrix.LATEST_FIREFOX_DEVEL_VERSION),
     esr: getMajorVersion(rawVersionMatrix.FIREFOX_ESR),
     nightly: getMajorVersion(rawVersionMatrix.FIREFOX_NIGHTLY),
-    release: getMajorVersion(rawVersionMatrix.LATEST_FIREFOX_VERSION),
+    release: getMajorVersion(rawVersionMatrix.LATEST_FIREFOX_VERSION)
   };
 }
 
@@ -20,12 +20,12 @@ function versionInfo(state = {}, action) {
   switch (action.type) {
     case REQUEST_VERSION_DATA:
       return Object.assign({}, state, {
-        isFetching: true,
+        isFetching: true
       });
     case RECEIVE_VERSION_DATA:
       return Object.assign({}, state, {
         isFetching: false,
-        matrix: processVersionMatrix(action.versionData),
+        matrix: processVersionMatrix(action.versionData)
       });
     default:
       return state;
@@ -51,7 +51,7 @@ function processCrashRows(crashRows, versionMatrix) {
     }
     if (!crashes[osname][channel]) {
       crashes[osname][channel] = {
-        data: {},
+        data: {}
       };
     }
     if (!crashes[osname][channel].data[version]) {
@@ -60,7 +60,7 @@ function processCrashRows(crashRows, versionMatrix) {
 
     const crashSummary = {
       usage_khours: (row.usage_hours / 1000.0),
-      date: new Date(row.start),
+      date: new Date(row.start)
     };
     CRASH_TYPES.forEach((crashType) => {
       crashSummary[`crash-${crashType}`] = row[crashType];
@@ -79,8 +79,8 @@ function processCrashRows(crashRows, versionMatrix) {
           insufficientData: [{
             measure: 'crash',
             expected: EXPECTED_NUM_DATAPOINTS_PER_OS_CHANNEL,
-            current: 0,
-          }],
+            current: 0
+          }]
         };
       } else {
         const channel = crashes[osname][channelName];
@@ -92,14 +92,14 @@ function processCrashRows(crashRows, versionMatrix) {
             insufficientData: [{
               measure: 'crash-main',
               expected: EXPECTED_NUM_DATAPOINTS_PER_OS_CHANNEL,
-              current: numDataPoints,
-            }],
+              current: numDataPoints
+            }]
           };
         } else {
           crashes[osname][channelName] = {
             ...channel,
             status: 'success',
-            passingMeasures: 1,
+            passingMeasures: 1
           };
         }
       }
@@ -113,12 +113,12 @@ function crashData(state = {}, action) {
   switch (action.type) {
     case REQUEST_CRASH_DATA:
       return Object.assign({}, state, {
-        isFetching: true,
+        isFetching: true
       });
     case RECEIVE_CRASH_DATA:
       return Object.assign({}, state, {
         isFetching: false,
-        channels: processCrashRows(action.crashRows, action.versionMatrix),
+        channels: processCrashRows(action.crashRows, action.versionMatrix)
       });
     default:
       return state;
@@ -127,7 +127,7 @@ function crashData(state = {}, action) {
 
 const rootReducer = combineReducers({
   versionInfo,
-  crashData,
+  crashData
 });
 
 export default rootReducer;

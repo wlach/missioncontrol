@@ -4,7 +4,7 @@ import { FIREFOX_VERSION_URL, CRASH_DATA_URL } from './schema';
 export const REQUEST_VERSION_DATA = 'REQUEST_VERSION_DATA';
 function requestVersionData() {
   return {
-    type: REQUEST_VERSION_DATA,
+    type: REQUEST_VERSION_DATA
   };
 }
 
@@ -13,7 +13,7 @@ function receiveVersionData(json) {
   return {
     type: RECEIVE_VERSION_DATA,
     versionData: json,
-    receivedAt: Date.now(),
+    receivedAt: Date.now()
   };
 }
 
@@ -30,7 +30,7 @@ export function fetchVersionData() {
 export const REQUEST_CRASH_DATA = 'REQUEST_CRASH_DATA';
 function requestCrashData() {
   return {
-    type: REQUEST_CRASH_DATA,
+    type: REQUEST_CRASH_DATA
   };
 }
 
@@ -40,7 +40,7 @@ function receiveCrashData(crashRows, versionMatrix) {
     type: RECEIVE_CRASH_DATA,
     crashRows,
     versionMatrix,
-    receivedAt: Date.now(),
+    receivedAt: Date.now()
   };
 }
 

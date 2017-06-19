@@ -18,20 +18,16 @@ export class MainViewComponent extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      filter: '',
+      filter: ''
     };
-  }
 
-  componentDidMount() {
-    // doing this here (instead of the constructor) due to:
-    // https://github.com/mozilla-neutrino/neutrino-dev/issues/172
     this.filterChanged = this.filterChanged.bind(this);
     this.cardClicked = this.cardClicked.bind(this);
   }
 
   filterChanged(ev) {
     this.setState({
-      filter: ev.target.value,
+      filter: ev.target.value
     });
   }
 
@@ -43,76 +39,85 @@ export class MainViewComponent extends React.Component {
     return (
       <div>
         <Helmet>
-          <title>Mission Control</title>
+          <title>
+            Mission Control
+          </title>
         </Helmet>
         <div className="container">
-        <div className="input-group filter-group">
-          <input id="filter-input" type="text" className="form-control" placeholder="Filter results" onChange={this.filterChanged}/>
+          <div className="input-group filter-group">
+            <input
+              id="filter-input"
+              type="text"
+              className="form-control"
+              placeholder="Filter results"
+              onChange={this.filterChanged} />
+          </div>
         </div>
-      </div>
-      <div className="container center">
-        {
-          this.props.crashData.channels && (
-            <CardColumns>
-              {
-                _.values(OS_MAPPING).map(platformName => ['release', 'beta', 'nightly', 'esr'].map(
-                  (channelName) => {
-                    const channel = this.props.crashData.channels[platformName][channelName];
-                    return stringMatchesFilter(
-                      [platformName, channelName], this.state.filter) && (
-                        <Card key={`${platformName}-${channelName}`}
-                              onClick={() => this.cardClicked(channelName, platformName)}
-                          className="missioncontrol-card">
-                        <CardHeader className={`alert-${channel.status}`}>
-                          { platformName } { channelName }
-                        </CardHeader>
-                        <CardBlock>
-                          {
-                            channel.passingMeasures && (
-                              <CardText>
-                                { channel.passingMeasures } measure(s)
-                                within acceptable range
-                              </CardText>
-                            )
-                          }
-                          {
-                            (channel.errors && channel.errors.length) && (
-                              <div>
-                                <CardText>
-                                  { channel.errors.length } measure(s)
-                                  outside of acceptable range:
-                                </CardText>
-                                <ErrorTable
-                                  platformName={platformName}
-                                  channelName={channelName}
-                                  errorType={ERROR_TYPE_OUTSIDE_RANGE}
-                                  errors={channel.errors}/>
-                              </div>)
-                          }
-                          {
-                            (channel.insufficientData && channel.insufficientData.length) && (
-                              <div>
-                                <CardText>
-                                  { channel.insufficientData.length } measure(s)
-                                  with insufficient data:
-                                </CardText>
-                                <ErrorTable
-                                  platformName={platformName}
-                                  channelName={channelName}
-                                  errorType={ERROR_TYPE_INSUFFICIENT_DATA}
-                                  errors={channel.insufficientData}/>
-                              </div>)
-                          }
-                        </CardBlock>
-                      </Card>
-                    );
-                  }))
-                }
-              </CardColumns>
-          )
-        }
-      </div>
-    </div>);
+        <div className="container center">
+          {
+            this.props.crashData.channels && (
+              <CardColumns>
+                {
+                  _.values(OS_MAPPING).map(platformName => ['release', 'beta', 'nightly', 'esr'].map(
+                    (channelName) => {
+                      const channel = this.props.crashData.channels[platformName][channelName];
+                      return stringMatchesFilter(
+                        [platformName, channelName], this.state.filter) && (
+                          <Card
+                            key={`${platformName}-${channelName}`}
+                            onClick={() => this.cardClicked(channelName, platformName)}
+                            className="missioncontrol-card">
+                            <CardHeader className={`alert-${channel.status}`}>
+                              { platformName } { channelName }
+                            </CardHeader>
+                            <CardBlock>
+                              {
+                                channel.passingMeasures && (
+                                  <CardText>
+                                    { channel.passingMeasures } measure(s)
+                                    within acceptable range
+                                  </CardText>
+                                )
+                              }
+                              {
+                                (channel.errors && channel.errors.length) && (
+                                  <div>
+                                    <CardText>
+                                      { channel.errors.length } measure(s)
+                                      outside of acceptable range:
+                                    </CardText>
+                                    <ErrorTable
+                                      platformName={platformName}
+                                      channelName={channelName}
+                                      errorType={ERROR_TYPE_OUTSIDE_RANGE}
+                                      errors={channel.errors} />
+                                  </div>
+                                )
+                              }
+                              {
+                                (channel.insufficientData && channel.insufficientData.length) && (
+                                  <div>
+                                    <CardText>
+                                      { channel.insufficientData.length } measure(s)
+                                      with insufficient data:
+                                    </CardText>
+                                    <ErrorTable
+                                      platformName={platformName}
+                                      channelName={channelName}
+                                      errorType={ERROR_TYPE_INSUFFICIENT_DATA}
+                                      errors={channel.insufficientData} />
+                                  </div>
+                                )
+                              }
+                            </CardBlock>
+                          </Card>
+                        );
+                    }))
+                  }
+              </CardColumns>)
+              }
+        </div>
+      </div>);
   }
 }
 

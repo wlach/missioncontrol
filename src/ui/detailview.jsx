@@ -44,32 +44,32 @@ const mapStateToProps = (state, ownProps) => {
       seriesList = [
         { name: mostRecent[1], data: seriesMap[mostRecent[1]] },
         { name: mostRecent[0], data: seriesMap[mostRecent[0]] },
-        { name: 'Older', data: _.values(aggregated) },
+        { name: 'Older', data: _.values(aggregated) }
       ];
     } else {
       seriesList = _.map(seriesMap, (data, version) => ({
         name: version,
-        data: data.sort((a, b) => a.date > b.date),
+        data: data.sort((a, b) => a.date > b.date)
       }));
     }
     return {
       status: 'success',
       isLoading: false,
-      seriesList,
+      seriesList
     };
   }
 
   return {
     status: 'loading',
     isLoading: true,
-    seriesList: [],
+    seriesList: []
   };
 };
 
 const getOptionalParameters = (props) => {
   const urlParams = new URLSearchParams(props.location.search);
   return {
-    timeInterval: urlParams.get('timeInterval') ? urlParams.get('timeInterval') : DEFAULT_TIME_INTERVAL,
+    timeInterval: urlParams.get('timeInterval') ? urlParams.get('timeInterval') : DEFAULT_TIME_INTERVAL
   };
 };
 
@@ -80,13 +80,9 @@ class DetailViewComponent extends React.Component {
       channel: props.match.params.channel,
       platform: props.match.params.platform,
       measure: props.match.params.measure,
-      ...getOptionalParameters(props),
+      ...getOptionalParameters(props)
     };
-  }
 
-  componentDidMount() {
-    // doing this here (instead of the constructor) due to:
-    // https://github.com/mozilla-neutrino/neutrino-dev/issues/172
     this.timeIntervalChanged = this.timeIntervalChanged.bind(this);
   }
 
@@ -94,7 +90,7 @@ class DetailViewComponent extends React.Component {
     const params = getOptionalParameters(nextProps);
     if (params.timeInterval !== this.state.timeInterval) {
       this.setState({
-        ...params,
+        ...params
       });
     }
   }
@@ -118,50 +114,61 @@ class DetailViewComponent extends React.Component {
             { name: `${this.state.platform} ${this.state.channel}`,
               link: `/${this.state.channel}/${this.state.platform}` },
             { name: this.state.measure,
-              link: `/${this.state.channel}/${this.state.platform}/${this.state.measure}` },
-          ]}
-          />
+              link: `/${this.state.channel}/${this.state.platform}/${this.state.measure}` }
+          ]} />
         {
           !this.props.isLoading &&
             <div className="container center">
-                    <Row>
-                        <select value={this.state.timeInterval} onChange={this.timeIntervalChanged}>
-                            {
-                              TIME_INTERVALS.map(
-                                timeInterval =>
-                                  <option value={timeInterval.value}>{timeInterval.label}</option>)
-                            }
-                        </select>
-                      </Row>
-                <Row>
-                    <Col>
-                        <div className="large-graph-container center" id="measure-series">
-                            <MeasureGraph
-                                title="Crash Rate"
-                                seriesList={this.props.seriesList}
-                                y={`${this.props.match.params.measure}`}
-                                linked={true}
-                                linked_format="%Y-%m-%d-%H-%M-%S"
-                                width={800}
-                                height={200}/>
-                          </div>
-                      </Col>
-                  </Row>
-                  <Row>
-                      <Col>
-                          <div className="large-graph-container center" id="time-series">
-                              <MeasureGraph
-                                  title="Usage khours"
-                                  seriesList={this.props.seriesList}
-                                  y={'usage_khours'}
-                                  linked={true}
-                                  linked_format="%Y-%m-%d-%H-%M-%S"
-                                  width={800}
-                                  height={200}/>
-                          </div>
-                      </Col>
-                  </Row>
-              </div>
+              <Row>
+                <select
+                  value={this.state.timeInterval}
+                  onChange={this.timeIntervalChanged}>
+                  {
+                    TIME_INTERVALS.map(
+                      timeInterval => (
+                        <option
+                          key={timeInterval.value}
+                          value={timeInterval.value}>
+                          {timeInterval.label}
+                        </option>)
+                    )
+                  }
+                  <option value="0">Custom...</option>
+                </select>
+              </Row>
+              <Row>
+                <Col>
+                  <div
+                    className="large-graph-container center"
+                    id="measure-series">
+                    <MeasureGraph
+                      title="Crash Rate"
+                      seriesList={this.props.seriesList}
+                      y={`${this.props.match.params.measure}`}
+                      linked={true}
+                      linked_format="%Y-%m-%d-%H-%M-%S"
+                      width={800}
+                      height={200} />
+                  </div>
+                </Col>
+              </Row>
+              <Row>
+                <Col>
+                  <div
+                    className="large-graph-container center"
+                    id="time-series">
+                    <MeasureGraph
+                      title="Usage khours"
+                      seriesList={this.props.seriesList}
+                      y={'usage_khours'}
+                      linked={true}
+                      linked_format="%Y-%m-%d-%H-%M-%S"
+                      width={800}
+                      height={200} />
+                  </div>
+                </Col>
+              </Row>
+            </div>
         }
       </div>
     );

@@ -10,7 +10,7 @@ export default class MeasureGraph extends React.Component {
       title: this.props.title,
       y: this.props.y || 'value',
       width: this.props.width,
-      height: this.props.height,
+      height: this.props.height
     };
   }
 
@@ -33,7 +33,6 @@ export default class MeasureGraph extends React.Component {
         xax_count={this.props.xax_count}
         linked={this.props.linked}
         linked_format={this.props.linked_format}
-        right={40}
-        />);
+        right={40} />);
   }
 }

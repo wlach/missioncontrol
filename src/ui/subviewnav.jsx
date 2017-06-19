@@ -6,7 +6,7 @@ export default class SubViewNav extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      breadcrumbs: props.breadcrumbs,
+      breadcrumbs: props.breadcrumbs
     };
   }
 
