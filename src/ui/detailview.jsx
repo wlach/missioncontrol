@@ -1,12 +1,11 @@
 import React from 'react';
 import _ from 'lodash';
-import { Row, Col } from 'reactstrap';
+import { Button, FormGroup, Input, Label, Modal, ModalBody, ModalHeader, ModalFooter, Row, Col } from 'reactstrap';
 import { Helmet } from 'react-helmet';
 import { connect } from 'react-redux';
 import MeasureGraph from './measuregraph.jsx';
 import SubViewNav from './subviewnav.jsx';
 import { DEFAULT_TIME_INTERVAL, TIME_INTERVALS } from '../schema';
-
 
 const mapStateToProps = (state, ownProps) => {
   const channel = ownProps.match.params.channel;
@@ -68,8 +67,30 @@ const mapStateToProps = (state, ownProps) => {
 
 const getOptionalParameters = (props) => {
   const urlParams = new URLSearchParams(props.location.search);
+  const dateParamRe = /^(\d+-\d+-\d+)-(\d+-\d+-\d+)$/;
+
+  // time interval can either be specified as an interval (starting from the present) or a set of dates
+  const validTimeIntervals = _.clone(TIME_INTERVALS);
+  let timeInterval = urlParams.get('timeInterval') ? urlParams.get('timeInterval') : DEFAULT_TIME_INTERVAL;
+  if (_.isString(timeInterval)) {
+    if (timeInterval.match(dateParamRe)) {
+      const args = timeInterval.match(dateParamRe);
+      timeInterval = {
+        startDate: new Date(args[1]),
+        endDate: new Date(args[2])
+      };
+      validTimeIntervals.unshift({
+        label: `${args[1]} → ${args[2]}`,
+        value: timeInterval
+      });
+    } else {
+      timeInterval = parseInt(timeInterval, 10);
+    }
+  }
+
   return {
-    timeInterval: urlParams.get('timeInterval') ? urlParams.get('timeInterval') : DEFAULT_TIME_INTERVAL
+    timeInterval,
+    validTimeIntervals
   };
 };
 
@@ -80,15 +101,22 @@ class DetailViewComponent extends React.Component {
       channel: props.match.params.channel,
       platform: props.match.params.platform,
       measure: props.match.params.measure,
+      customStartDate: undefined,
+      customEndDate: undefined,
       ...getOptionalParameters(props)
     };
 
     this.timeIntervalChanged = this.timeIntervalChanged.bind(this);
+    this.cancelChooseCustomTimeInterval = this.cancelChooseCustomTimeInterval.bind(this);
+    this.customTimeIntervalChosen = this.customTimeIntervalChosen.bind(this);
+    this.customStartDateChanged = this.customStartDateChanged.bind(this);
+    this.customEndDateChanged = this.customEndDateChanged.bind(this);
+    this.isCustomTimeIntervalValid = this.isCustomTimeIntervalValid.bind(this);
   }
 
   componentWillUpdate(nextProps) {
     const params = getOptionalParameters(nextProps);
-    if (params.timeInterval !== this.state.timeInterval) {
+    if (!_.isEqual(params.timeInterval, this.state.timeInterval)) {
       this.setState({
         ...params
       });
@@ -96,7 +124,48 @@ class DetailViewComponent extends React.Component {
   }
 
   timeIntervalChanged(ev) {
-    this.props.history.push(`/${this.state.channel}/${this.state.platform}/${this.state.measure}?timeInterval=${ev.target.value}`);
+    const value = parseInt(ev.target.value, 10);
+    if (!value) {
+      // value = 0 => let user select a custom time interval
+      this.setState({
+        choosingCustomTimeInterval: true,
+        customStartDate: undefined,
+        customEndDate: undefined
+      });
+    } else {
+      this.props.history.push(`/${this.state.channel}/${this.state.platform}/${this.state.measure}?timeInterval=${value}`);
+    }
+  }
+
+  customStartDateChanged(ev) {
+    this.setState({
+      customStartDate: ev.target.value
+    });
+  }
+
+  customEndDateChanged(ev) {
+    this.setState({
+      customEndDate: ev.target.value
+    });
+  }
+
+  cancelChooseCustomTimeInterval() {
+    this.setState({
+      choosingCustomTimeInterval: false
+    });
+  }
+
+  customTimeIntervalChosen() {
+    this.setState({
+      choosingCustomTimeInterval: false
+    });
+    const timeIntervalStr = `${this.state.customStartDate}-${this.state.customEndDate}`;
+    this.props.history.push(`/${this.state.channel}/${this.state.platform}/${this.state.measure}?timeInterval=${timeIntervalStr}`);
+  }
+
+  isCustomTimeIntervalValid() {
+    return (this.state.customStartDate && this.state.customEndDate &&
+            this.state.customStartDate < this.state.customEndDate);
   }
 
   render() {
@@ -124,7 +193,7 @@ class DetailViewComponent extends React.Component {
                   value={this.state.timeInterval}
                   onChange={this.timeIntervalChanged}>
                   {
-                    TIME_INTERVALS.map(
+                    this.state.validTimeIntervals.map(
                       timeInterval => (
                         <option
                           key={timeInterval.value}
@@ -135,6 +204,39 @@ class DetailViewComponent extends React.Component {
                   }
                   <option value="0">Custom...</option>
                 </select>
+                <Modal
+                  isOpen={this.state.choosingCustomTimeInterval}
+                  toggle={this.cancelChooseCustomTimeInterval}>
+                  <ModalHeader toggle={this.cancelChooseCustomTimeInterval}>
+                    Custom Date Range
+                  </ModalHeader>
+                  <ModalBody>
+                    <FormGroup>
+                      <Label for="startDate">
+                        Start Date
+                      </Label>
+                      <Input
+                        type="date"
+                        onChange={this.customStartDateChanged}
+                        id="startDate" />
+                    </FormGroup>
+                    <FormGroup>
+                      <Label for="endDate">
+                        End Date
+                      </Label>
+                      <Input
+                        type="date"
+                        onChange={this.customEndDateChanged}
+                        id="endDate" />
+                    </FormGroup>
+                  </ModalBody>
+                  <ModalFooter>
+                    <Button
+                      color="primary"
+                      disabled={!this.isCustomTimeIntervalValid()}
+                      onClick={this.customTimeIntervalChosen}>Ok</Button>
+                  </ModalFooter>
+                </Modal>
               </Row>
               <Row>
                 <Col>
