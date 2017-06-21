@@ -27,7 +27,6 @@
     "react-helmet": "^5.1.3",
     "react-metrics-graphics": "wlach/react-metrics-graphics",
     "react-redux": "^5.0.5",
-    "react-router": "^4.1.1",
     "react-router-dom": "^4.1.1",
     "reactstrap": "^4.5.0",
     "redux": "^3.6.0",
