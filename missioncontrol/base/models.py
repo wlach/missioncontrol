@@ -1,6 +1,17 @@
 from django.db import models
 
 
+class Application(models.Model):
+    '''
+    Represents a type of application e.g. "firefox", "fennec"
+    '''
+    name = models.CharField(max_length=100, unique=True)
+    telemetry_name = models.CharField(max_length=100, unique=True)
+
+    class Meta:
+        db_table = 'application'
+
+
 class Platform(models.Model):
     '''
     Represents a platform e.g. "windows"
@@ -51,10 +62,11 @@ class Build(models.Model):
     '''
     Represents a specific build of the product
     '''
+    application = models.ForeignKey(Application)
     platform = models.ForeignKey(Platform)
     channel = models.ForeignKey(Channel)
     build_id = models.CharField(max_length=14)
-    version = models.CharField(max_length=10)
+    version = models.CharField(max_length=20)
 
     class Meta:
         db_table = 'build'
